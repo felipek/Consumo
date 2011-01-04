@@ -40,7 +40,7 @@ class ConsumoAbstract:
 		debug = urllib2.HTTPHandler()
 		self._opener = urllib2.build_opener(debug, cookie)
 		self._baseurl = baseurl
-		self._data = { 'info' : [], 'consume' : [] }
+		self._data = { 'info' : [], 'consume' : [], 'extra' : [] }
 
 		self.setUsername(username)
 		self.setPassword(password)
@@ -55,7 +55,7 @@ class ConsumoAbstract:
 
 		# Adds first field: carrier + version.
 		name = self.__class__.__name__[7:].lower()
-		self._data['info'].append(ConsumoField('carrier', u'%s-%s' %
+		self._data['extra'].append(ConsumoField('carrier', u'%s-%s' %
 			(name, self.__class__.version)))
 
 	def request(self, handler, url = '', data = None):
@@ -104,7 +104,7 @@ class ConsumoVivo(ConsumoAbstract):
 			boxd = box.findAll('dd')
 			self._data['info'].append(ConsumoField('linha', boxd[0].text))
 			self._data['info'].append(ConsumoField('plano', boxd[2].text))
-			self._data['info'].append(ConsumoField('protoclo', boxd[3].text))
+			self._data['info'].append(ConsumoField('protocolo', boxd[3].text))
 			self._data['info'].append(ConsumoField('data', boxd[4].text))
 
 		box = soup.find('span', { 'class' : 'txtLaranja txtGrande'})
@@ -119,7 +119,7 @@ class ConsumoVivo(ConsumoAbstract):
 				data = re.split('trafegados no (.*): ([^ ]*)', node.text)
 				if len(data) == 4:
 					consume = data[2].replace(',', '.')
-					field = ConsumoField("consume", consume, data[1])
+					field = ConsumoField("consume", consume, 'Consumo (Mb)')
 					self._data["consume"].append(field)
 
 	# Handler: saldo.
