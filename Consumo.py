@@ -165,7 +165,7 @@ def usage():
 		"-c\t--carrier\tUses a specific <carrier>\n" \
 		"-u\t--username\tUses username <username>\n" \
 		"-p\t--password\tUses password <password>\n" \
-		"-h\t--help\t\tThis help" % __name__
+		"-h\t--help\t\tThis help" % sys.argv[0]
 
 
 def main():

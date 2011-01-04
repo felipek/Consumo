@@ -20,7 +20,7 @@ The Python module can also be used as a UNIX program.
 Here is the command line interface:
 
     $ Consumo.py -h
-    Usage: __main__ -l || -c <carrier> -u <username> -p <password>
+    Usage: Consumo.py -l || -c <carrier> -u <username> -p <password>
     -l  --list       Lists available carriers
     -c  --carrier    Uses a specific <carrier>
     -u  --username   Uses username <username>
