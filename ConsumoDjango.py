@@ -1,11 +1,12 @@
 from django.shortcuts import render_to_response
 from django.http import HttpResponse
 import Consumo
+import demjson
 
 def list(request):
 	"""List method - list all available carriers."""
 	list = Consumo.carrier_classes().keys()
-	return HttpResponse(str(list), mimetype="application/json")
+	return HttpResponse(demjson.encode(list), mimetype="application/json")
 
 def carrier(request, carrier):
 	"""Carrier method (carrier): gets general info."""
@@ -27,8 +28,8 @@ def carrier(request, carrier):
 		server = obj(username, password)
 		server.parse()
 
-		return HttpResponse(str(server.data()),
+		return HttpResponse(demjson.encode(server.data()),
 			mimetype="application/json")
 	except Consumo.ConsumoException, e:
 		# FIXME: better error handling (authentication!).
-		return HttpResponse(str(e), status = 500)
+		return HttpResponse(demjson.encode(e), status = 500)
