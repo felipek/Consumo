@@ -119,7 +119,7 @@ class ConsumoVivo(ConsumoAbstract):
 				data = re.split('trafegados no (.*): ([^ ]*)', node.text)
 				if len(data) == 4:
 					consume = data[2].replace(',', '.')
-					field = ConsumoField("consume", consume, 'Consumo')
+					field = ConsumoField("consume", consume, 'Consumo (Mb)')
 					self._data["consume"].append(field)
 
 	# Handler: saldo.
