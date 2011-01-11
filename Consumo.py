@@ -76,6 +76,8 @@ class ConsumoAbstract:
 
 	def setUsername(self, username):
 		"""Sets a username (often this is not just the 'username')."""
+		if username.startswith('0'):
+			username = username[1:]
 		self._username = username
 
 	def setPassword(self, password):
