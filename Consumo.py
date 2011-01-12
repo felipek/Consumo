@@ -37,8 +37,7 @@ class ConsumoAbstract:
 	"""Abstract carrier implementation. Carriers MUST subclass this class."""
 	def __init__(self, baseurl, username = None, password = None):
 		cookie = urllib2.HTTPCookieProcessor()
-		debug = urllib2.HTTPHandler()
-		self._opener = urllib2.build_opener(debug, cookie)
+		self._opener = urllib2.build_opener(cookie)
 		self._baseurl = baseurl
 		self._data = { 'info' : [], 'consume' : [], 'extra' : [] }
 
@@ -63,8 +62,7 @@ class ConsumoAbstract:
 		final = self._baseurl + '/' + url
 
 		request = urllib2.Request(final)
-		request.add_header('User-Agent', "Consumo/%s" % __version__)
-		request.add_header('Accept-Encoding', 'gzip')
+		request.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_5; de-de) AppleWebKit/534.15+ (KHTML, like Gecko) Version/5.0.3 Safari/533.19.4')
 		if data is not None:
 			request.add_data(data)
 		descriptor = self._opener.open(request)
@@ -115,20 +113,27 @@ class ConsumoVivo(ConsumoAbstract):
 
 	# Handler: trafego.
 	def _parseTrafego(self, soup):
+		data = []
 		boxTrafego = soup.find('div', { 'class' : 'conteudoTrafego'})
 		if boxTrafego is not None:
 			for node in boxTrafego.findAll('b'):
 				data = re.split('trafegados no (.*): ([^ ]*)', node.text)
 				if len(data) == 4:
 					consume = data[2].replace(',', '.')
-					field = ConsumoField("consume", consume, 'Consumo (Mb)')
-					self._data["consume"].append(field)
+					field = ConsumoField('consume', consume, 'Consumo (Mb)')
+					self._data['consume'].append(field)
+
+		if len(data) == 0:
+			field = ConsumoField('consume', 'Temp. indisponivel', 'Consumo (Mb)')
+			self._data['consume'].append(field)
 
 	# Handler: saldo.
 	def _parseSaldo(self, soup):
 		saldo = soup.find('td', { 'class' : 'txtAzul volTd' })
 		if saldo is not None and len(saldo.text) > 0:
-			self._data['info'].append(ConsumoField('saldo', saldo.text))
+			self._data['info'].append(ConsumoField('saldo', saldo.text, 'Saldo Estimado'))
+		else:
+			self._data['info'].append(ConsumoField('saldo', 'Temp. indisponivel', 'Saldo Estimado'))
 	
 	def parse(self):
 		# Login.
