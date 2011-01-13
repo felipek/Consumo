@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# coding: utf-8
 # Consumo Scraper
 #
 # Software to extract usage data from brazilian carriers.
@@ -39,7 +40,7 @@ class ConsumoAbstract:
 		cookie = urllib2.HTTPCookieProcessor()
 		self._opener = urllib2.build_opener(cookie)
 		self._baseurl = baseurl
-		self._data = { 'info' : [], 'consume' : [], 'extra' : [] }
+                self._data = { 'info': [], 'consume': [], 'financial': [], 'extra': [] }
 
 		self.setUsername(username)
 		self.setPassword(password)
@@ -91,6 +92,8 @@ class ConsumoAbstract:
             self.printCategory(self._data['info'])
             print '\nConsumption Information:'
             self.printCategory(self._data['consume'])
+            print '\nFinancial Information:'
+            self.printCategory(self._data['financial'])
             print '\nExtra Information:'
             self.printCategory(self._data['extra'])
 
@@ -132,12 +135,21 @@ class ConsumoVivo(ConsumoAbstract):
 				data = re.split('trafegados no (.*): ([^ ]*)', node.text)
 				if len(data) == 4:
 					consume = data[2].replace(',', '.')
-					field = ConsumoField('Consumption', consume, 'Consumo (Mb)')
+					field = ConsumoField('Consumo de dados', consume, 'Consumo (Mb)')
 					self._data['consume'].append(field)
 
 		if len(data) == 0:
 			field = ConsumoField('consume', 'Temp. indisponivel', 'Consumo (Mb)')
 			self._data['consume'].append(field)
+
+        def _parseAccountHistory(self, soup):
+          lines = soup.findAll('tr')
+          if lines is not None:
+              for row in lines[1:]:
+                cols = row.findAll('td', limit=4)
+                if len(cols) == 4:
+                    content = u"Mês: " + cols[0].text + u", Valor: R$ " + cols[2].text + u", Situação: " + cols[3].text
+                    self._data['financial'].append(ConsumoField('Invoice', content))
 
 	# Handler: saldo.
 	def _parseSaldo(self, soup):
@@ -148,12 +160,16 @@ class ConsumoVivo(ConsumoAbstract):
 			self._data['info'].append(ConsumoField('Saldo', 'Temp. indisponivel', 'Saldo Estimado'))
 	
 	def parse(self):
-		# Login.
+                # Login.
 		url = 'vivoLogin?_nfpb=true&_windowLabel=login_1&' + \
 			'login_1_actionOverride=%2Fbr%2Fcom%2Fvivo%2Fvol%2Fportal%2Flogin%2FdoLogin'
 		data = "ddd=%s&linha=%s&senhaIni=senha&senha=%s&login_1%%7BactionForm.captcha%%7D:" % \
 			(self._username[:2], self._username[2:], self._password)
 		self.request(self._parseLogin, url, data)
+
+	        # Account payment history
+                url = 'vivo?_nfpb=true&_pageLabel=pages_gerencieSuaConta_page&_nfls=false'
+                self.request(self._parseAccountHistory, url)
 
 		# Trafego.
 		url = 'vivo?_nfpb=true&_pageLabel=pages_consultarTrafegoDados_page&_nfls=false'
