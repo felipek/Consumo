@@ -10,6 +10,7 @@
 
 from BeautifulSoup import BeautifulSoup
 from UserDict import UserDict
+from string import Template
 import urllib2
 import re
 import getopt
@@ -143,13 +144,18 @@ class ConsumoVivo(ConsumoAbstract):
 			self._data['consume'].append(field)
 
         def _parseAccountHistory(self, soup):
+          invoiceUrl = Template(self._baseurl + "/vivo?_nfpb=true&_windowLabel=suaConta_1&\
+suaConta_1_actionOverride=%2Fbr%2Fcom%2Fvivo%2Fvol%2Fportlets%2Fsuaconta%2FconsultarImagemArquivoFatura&\
+suaConta_1{actionForm.cicloSelecionado}=$date&suaConta_1{actionForm.formatoArquivo}=PDF")
+            
           lines = soup.findAll('tr')
           if lines is not None:
               for row in lines[1:]:
                 cols = row.findAll('td', limit=4)
                 if len(cols) == 4:
-                    content = u"Mês: " + cols[0].text + u", Valor: R$ " + cols[2].text + u", Situação: " + cols[3].text
-                    self._data['financial'].append(ConsumoField('Invoice', content))
+                    content = Template(u'\n\tMês: $month\n\tValor: R$$ $value\n\tSituação: $status\n\tBoleto: $invoice\n')
+                    fileUrl = invoiceUrl.substitute(date=cols[1].text)
+                    self._data['financial'].append(ConsumoField('Invoice', content.substitute(month=cols[0].text, value=cols[2].text, status=cols[3].text, invoice=fileUrl)))
 
 	# Handler: saldo.
 	def _parseSaldo(self, soup):
@@ -178,7 +184,6 @@ class ConsumoVivo(ConsumoAbstract):
 		# Saldo.
 		url = 'vivo?_nfpb=true&_pageLabel=pages_consultarSaldoParcial_page&_nfls=false'
 		self.request(self._parseSaldo, url)
-
 
 def carrier_classes():
 	"""Returns a list of carriers (name, class name, class object)."""
