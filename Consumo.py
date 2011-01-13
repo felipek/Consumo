@@ -48,13 +48,13 @@ class ConsumoAbstract:
 
 		# Both attributes are required: parse (method) & version (string).
 		try:
-			getattr(self, 'parse') and getattr(self, 'version')
+                        getattr(self, 'parse') and getattr(self, 'version')
 		except:
 			raise NotImplementedError
 
 		# Adds first field: carrier + version.
 		name = self.__class__.__name__[7:].lower()
-		self._data['extra'].append(ConsumoField('carrier', u'%s-%s' %
+		self._data['extra'].append(ConsumoField('Carrier', u'%s-%s' %
 			(name, self.__class__.version)))
 
 	def request(self, handler, url = '', data = None):
@@ -86,6 +86,18 @@ class ConsumoAbstract:
 		"""Returns raw data containing server/carrier data."""
 		return self._data
 
+        def printData(self):
+            print '\nAccount Information:'
+            self.printCategory(self._data['info'])
+            print '\nConsumption Information:'
+            self.printCategory(self._data['consume'])
+            print '\nExtra Information:'
+            self.printCategory(self._data['extra'])
+
+        def printCategory(self, cat):
+            for item in cat:
+                print item['name'] + ': ', item['value']
+
 
 class ConsumoVivo(ConsumoAbstract):
 	"""Carrier: Vivo."""
@@ -102,14 +114,14 @@ class ConsumoVivo(ConsumoAbstract):
 			raise ConsumoException("Password/username problem")
 		else:
 			boxd = box.findAll('dd')
-			self._data['info'].append(ConsumoField('linha', boxd[0].text))
-			self._data['info'].append(ConsumoField('plano', boxd[2].text))
-			self._data['info'].append(ConsumoField('protocolo', boxd[3].text))
-			self._data['info'].append(ConsumoField('data', boxd[4].text))
+			self._data['info'].append(ConsumoField('Linha', boxd[0].text))
+			self._data['info'].append(ConsumoField('Plano', boxd[2].text))
+			self._data['info'].append(ConsumoField('Protocolo', boxd[3].text))
+			self._data['info'].append(ConsumoField('Data', boxd[4].text))
 
 		box = soup.find('span', { 'class' : 'txtLaranja txtGrande'})
 		if box is not None:
-			self._data['info'].append(ConsumoField('pontos', box.text))
+			self._data['info'].append(ConsumoField('Pontos', box.text))
 
 	# Handler: trafego.
 	def _parseTrafego(self, soup):
@@ -120,7 +132,7 @@ class ConsumoVivo(ConsumoAbstract):
 				data = re.split('trafegados no (.*): ([^ ]*)', node.text)
 				if len(data) == 4:
 					consume = data[2].replace(',', '.')
-					field = ConsumoField('consume', consume, 'Consumo (Mb)')
+					field = ConsumoField('Consumption', consume, 'Consumo (Mb)')
 					self._data['consume'].append(field)
 
 		if len(data) == 0:
@@ -131,9 +143,9 @@ class ConsumoVivo(ConsumoAbstract):
 	def _parseSaldo(self, soup):
 		saldo = soup.find('td', { 'class' : 'txtAzul volTd' })
 		if saldo is not None and len(saldo.text) > 0:
-			self._data['info'].append(ConsumoField('saldo', saldo.text, 'Saldo Estimado'))
+			self._data['info'].append(ConsumoField('Saldo', saldo.text, 'Saldo Estimado'))
 		else:
-			self._data['info'].append(ConsumoField('saldo', 'Temp. indisponivel', 'Saldo Estimado'))
+			self._data['info'].append(ConsumoField('Saldo', 'Temp. indisponivel', 'Saldo Estimado'))
 	
 	def parse(self):
 		# Login.
@@ -215,7 +227,7 @@ def main():
 
 		obj = obj_carrier(username, password)
 		obj.parse()
-		print obj.data()
+		obj.printData()
 	else:
 		print "Unknown carrier: %s (use -l to get the carriers list)" % carrier
 
