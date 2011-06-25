@@ -167,10 +167,12 @@ suaConta_1{actionForm.cicloSelecionado}=$date&suaConta_1{actionForm.formatoArqui
 	
 	def parse(self):
                 # Login.
+		new_password = self._password[0]*2 + self._password[1]*2 + self._password[2]*2 + self._password[3]*2;
+	
 		url = 'vivoLogin?_nfpb=true&_windowLabel=login_1&' + \
 			'login_1_actionOverride=%2Fbr%2Fcom%2Fvivo%2Fvol%2Fportal%2Flogin%2FdoLogin'
-		data = "ddd=%s&linha=%s&senhaIni=senha&senha=%s&login_1%%7BactionForm.captcha%%7D:" % \
-			(self._username[:2], self._username[2:], self._password)
+		data = "ddd=%s&linha=%s&senhaIni=senha&senha=%s&senhahid=%s&login_1%%7BactionForm.captcha%%7D:" % \
+			(self._username[:2], self._username[2:], new_password, new_password)
 		self.request(self._parseLogin, url, data)
 
 	        # Account payment history
